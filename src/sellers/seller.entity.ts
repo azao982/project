@@ -1,9 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-export type UserRole = 'admin' | 'seller' | 'customer';
-
 @Entity()
-export class User {
+export class Seller {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -14,8 +12,5 @@ export class User {
   email: string;
 
   @Column()
-  password: string;
-
-  @Column({ default: 'customer' })
-  role: UserRole;
+  telephone: string;
 }

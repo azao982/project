@@ -1,5 +1,5 @@
 // src/user/user.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -11,33 +11,48 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(userData: Partial<User>): Promise<User> {
-    const user = this.userRepository.create(userData);
+  /**
+   * Crée un nouvel utilisateur et le sauvegarde en base.
+   * @param user - objet partiel User (nom, email, password)
+   * @returns utilisateur créé
+   */
+  async create(user: Partial<User>): Promise<User> {
     return this.userRepository.save(user);
   }
 
+  /**
+   * Recherche un utilisateur par son email.
+   * @param email - adresse email
+   * @returns utilisateur ou null si pas trouvé
+   */
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { email } });
+  }
+
+  /**
+   * Récupère tous les utilisateurs.
+   * @returns tableau d'utilisateurs
+   */
   async findAll(): Promise<User[]> {
     return this.userRepository.find();
   }
 
-  async findOne(id: number): Promise<User> {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) {
-      throw new NotFoundException(`Utilisateur avec l'id ${id} introuvable`);
-    }
-    return user;
+  /**
+   * Recherche un utilisateur par son id.
+   * @param id - identifiant utilisateur
+   * @returns utilisateur ou null si pas trouvé
+   */
+  async findById(id: number): Promise<User | null> {
+    return this.userRepository.findOne({ where: { id } });
   }
+  async createAdmin() {
+  const admin = this.userRepository.create({
+    nom: 'Admin',
+    email: 'admin@example.com',
+    password: '123456',
+    role: 'admin',
+  });
+  return this.userRepository.save(admin);
+}
 
-  async update(id: number, userData: Partial<User>): Promise<User> {
-    const user = await this.findOne(id); // vérifie si l'utilisateur existe
-    const updated = Object.assign(user, userData);
-    return this.userRepository.save(updated);
-  }
-
-  async remove(id: number): Promise<void> {
-    const result = await this.userRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Utilisateur avec l'id ${id} introuvable`);
-    }
-  }
 }
